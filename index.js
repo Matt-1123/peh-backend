@@ -214,6 +214,19 @@ app.post("/login", (req, res) => {
   })
 });
 
+// @route         POST /logout
+// @description   Logout user and clear refresh token
+// @access        Private
+app.post('/logout', (req, res) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none'
+  })
+
+  res.status(200).json({ message: 'Logged out successfully' })
+})
+
 // @route         GET /user
 // @description   Get a user's information
 // @access        Private
