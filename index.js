@@ -84,7 +84,6 @@ app.post("/signup", async (req, res) => {
     const usernameAlreadyExists = await doesUsernameExist(username);
     
     if (usernameAlreadyExists) {
-      console.log("username already exists");
       return res.status(409).json({
         success: false,
         message: 'Username is taken'
@@ -95,7 +94,6 @@ app.post("/signup", async (req, res) => {
     const emailAlreadyExists = await doesEmailExist(email);
     
     if (emailAlreadyExists) {
-      console.log("email already exists");
       return res.status(409).json({
         success: false,
         message: 'An account with this email address already exists'
@@ -122,8 +120,6 @@ app.post("/signup", async (req, res) => {
           message: 'Error creating user account'
         });
       }
-      
-      console.log('signup data: ', data)
 
       const userId = data.insertId;
 
@@ -140,14 +136,6 @@ app.post("/signup", async (req, res) => {
         process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
         { expiresIn: '7d' }
       );
-      
-      // Set cookies with appropriate settings
-      // res.cookie('accessToken', accessToken, {
-      //   httpOnly: true,
-      //   secure: process.env.NODE_ENV === 'production',
-      //   sameSite: 'strict',
-      //   maxAge: 15 * 60 * 1000 // 15 minutes
-      // });
       
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
@@ -189,27 +177,54 @@ app.post("/login", (req, res) => {
   db.query(q, [req.body.email], (err, data) => {   
     if(err) {
       console.error(err)
-      res.json({Error: err})
+      res.status(400).json({Error: err})
     } else if(data.length > 0) {
-      console.log("data", data)
       bcrypt.compare(req.body.password.toString(), data[0].password, (err, response) => {
         if(err) {
           console.log("Login error", err)
-          res.json({Error: "Login error"})
+          res.status(400).json({Error: "Login error"})
         } else if(response) {
           const id = data[0].id;
-          const token = jwt.sign({id}, process.env.JWT_SECRET, {expiresIn: '1d'});
-          res.cookie('token', token)
-          console.log("Password match: ", response)
-          res.json({ Status: "Success" })
+          const username = data[0].username;
+          const email = data[0].email;
+
+          // Create access token (short-lived)
+          const accessToken = jwt.sign(
+            { id, type: 'access' }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '15m' }
+          );
+          
+          // Create refresh token (long-lived)
+          const refreshToken = jwt.sign(
+            { id, type: 'refresh' }, 
+            process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
+            { expiresIn: '7d' }
+          );
+          
+          res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'none',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+          });
+
+          return res.status(201).json({
+            message: 'User logged in successfully',
+            user: {
+              id,
+              username,
+              email
+            },
+            accessToken,
+            refreshToken: refreshToken.substring(0, 10) + '...' // Only send partial token for security
+          });
         } else {
-          console.error("Password is incorrect.")
-          res.json({ Error: "Password is incorrect." })
+          res.status(401).json({ Error: "Invalid credentials" })
         }
       })
     } else {
-      console.error("Email does not exist.")
-      res.json({ Error: "Email does not exist." })
+      res.status(401).json({ Error: "Invalid credentials" })
     }
   })
 });
