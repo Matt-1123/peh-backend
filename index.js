@@ -126,13 +126,46 @@ app.post("/signup", async (req, res) => {
       console.log('signup data: ', data)
 
       const userId = data.insertId;
-      const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {expiresIn: '1d'});
-      res.cookie('token', token)
+
+      // Create access token (short-lived)
+      const accessToken = jwt.sign(
+        { id: userId, type: 'access' }, 
+        process.env.JWT_SECRET, 
+        { expiresIn: '15m' }
+      );
+      
+      // Create refresh token (long-lived)
+      const refreshToken = jwt.sign(
+        { id: userId, type: 'refresh' }, 
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, 
+        { expiresIn: '7d' }
+      );
+      
+      // Set cookies with appropriate settings
+      // res.cookie('accessToken', accessToken, {
+      //   httpOnly: true,
+      //   secure: process.env.NODE_ENV === 'production',
+      //   sameSite: 'strict',
+      //   maxAge: 15 * 60 * 1000 // 15 minutes
+      // });
+      
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        // sameSite: 'strict',
+        sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+
+      // const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {expiresIn: '1d'});
+      // res.cookie('token', token)
       // Success response
       return res.status(201).json({
         success: true,
         message: 'User account created successfully',
-        userId
+        userId,
+        accessToken,
+        refreshToken: refreshToken.substring(0, 10) + '...' // Only send partial token for security
       });
     });
     
