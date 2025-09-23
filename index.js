@@ -27,7 +27,7 @@ const db = mysql.createConnection({
 });
 
 app.get("/", (req, res) => {
-  res.json("Welcome to the PEH API");
+  res.json("Welcome to the Project Earth Health API");
 });
 
 const doesUsernameExist = (username) => {
@@ -70,9 +70,9 @@ const doesEmailExist = (email) => {
 // AUTH
 app.post("/signup", async (req, res) => {
   try {
-    // Input validation
     const { email, username, password } = req.body;
     
+    // Input validation
     if (!email || !username || !password) {
       return res.status(400).json({
         success: false,
@@ -145,8 +145,6 @@ app.post("/signup", async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
-      // const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {expiresIn: '1d'});
-      // res.cookie('token', token)
       // Success response
       return res.status(201).json({
         success: true,
@@ -169,11 +167,6 @@ app.post("/signup", async (req, res) => {
 app.post("/login", (req, res) => {
   const q = 'SELECT * from users WHERE email = ?'
 
-  const values = [
-    req.body.email,
-    req.body.password
-  ];
-
   db.query(q, [req.body.email], (err, data) => {   
     if(err) {
       console.error(err)
@@ -181,7 +174,6 @@ app.post("/login", (req, res) => {
     } else if(data.length > 0) {
       bcrypt.compare(req.body.password.toString(), data[0].password, (err, response) => {
         if(err) {
-          console.log("Login error", err)
           res.status(400).json({Error: "Login error"})
         } else if(response) {
           const id = data[0].id;
