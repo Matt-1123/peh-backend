@@ -165,6 +165,11 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  if(!email || !password) {
+    res.status(400).json({ Error: "Email and password are required" })
+  }
+  
   const q = 'SELECT * from users WHERE email = ?'
 
   db.query(q, [req.body.email], (err, data) => {   
