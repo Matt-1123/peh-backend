@@ -196,7 +196,8 @@ app.post("/login", (req, res) => {
           
           res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
+            // secure: process.env.NODE_ENV === 'production',
+            secure: true, // TODO: change to the above line
             sameSite: 'none',
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
@@ -248,6 +249,79 @@ app.delete('/user', (req, res) => {
   res.json('DELETE request for a user.')
 })
 
+// @route         POST /refresh
+// @description   Generate new access token from refresh token
+// @access        Public (Requires a valid refresh token in cookie)
+app.post("/refresh", (req, res) => {
+  // Get refresh token from cookie
+  const refreshToken = req.cookies.refreshToken;
+  
+  if (!refreshToken) {
+    return res.status(401).json({ Error: "No refresh token provided" });
+  }
+  
+  // Verify the refresh token
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ Error: "Invalid or expired refresh token" });
+    }
+    
+    // Check if token type is 'refresh'
+    if (decoded.type !== 'refresh') {
+      return res.status(403).json({ Error: "Invalid token type" });
+    }
+    
+    // Get user data from database to ensure user still exists
+    const q = 'SELECT * from users WHERE id = ?';
+    db.query(q, [decoded.id], (err, data) => {
+      if (err) {
+        console.error(err);
+        return res.status(400).json({ Error: err });
+      } 
+      
+      if (data.length === 0) {
+        return res.status(401).json({ Error: "User not found" });
+      }
+      
+      const user = data[0];
+      const { id, username, email } = user;
+      
+      // Create new access token
+      const newAccessToken = jwt.sign(
+        { id, type: 'access' },
+        process.env.JWT_SECRET,
+        { expiresIn: '15m' }
+      );
+      
+      // Optionally create new refresh token (token rotation for better security)
+      const newRefreshToken = jwt.sign(
+        { id, type: 'refresh' },
+        process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+      
+      // Set new refresh token in cookie
+      res.cookie('refreshToken', newRefreshToken, {
+        httpOnly: true,
+        // secure: process.env.NODE_ENV === 'production',
+        secure: true, // TODO: change to the above line
+        sameSite: 'none',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      
+      return res.status(200).json({
+        message: 'Token refreshed successfully',
+        user: {
+          id,
+          username,
+          email
+        },
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken.substring(0, 10) + '...' // Only send partial token for security
+      });
+    });
+  });
+});
 
 // ACTIONS
 
