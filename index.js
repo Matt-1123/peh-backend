@@ -165,7 +165,7 @@ app.post("/signup", async (req, res) => {
 });
 
 app.post("/login", (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
   if(!email || !password) {
     res.status(400).json({ Error: "Email and password are required" })
   }
@@ -332,7 +332,6 @@ app.post("/refresh", (req, res) => {
 
 app.get("/cleanups", (req, res) => {
   const limit = parseInt(req.query._limit);
-  console.log('limit: ', limit)
   
   const q = limit ? `SELECT * FROM cleanups ORDER BY createdAt DESC LIMIT ?;` : "SELECT * FROM cleanups ORDER BY createdAt DESC;";
     
@@ -353,8 +352,11 @@ app.get("/cleanups/:id", (req, res) => {
     if (err) {
       console.log(err);
       return res.json(err);
+    } else if(data.length === 0) {
+      res.status(404).json({ Error: "Cleanup ID not found" })
+    } else {
+      res.status(200).json(data);
     }
-    return res.json(data);
   });
 });
 
