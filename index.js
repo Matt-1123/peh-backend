@@ -362,7 +362,7 @@ app.get("/cleanups/:id", (req, res) => {
 });
 
 app.post("/cleanups", protect, (req, res) => {
-  const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`) VALUES (?)";
+  const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`, `user_id`) VALUES (?)";
 
   const values = [
     req.body.title,
@@ -373,7 +373,8 @@ app.post("/cleanups", protect, (req, res) => {
     req.body.env_type,
     req.body.total_items,
     req.body.total_bags,
-    req.body.createdAt  
+    req.body.createdAt,
+    req.user.id
   ];
 
   console.log('db query values: ', values)
@@ -393,11 +394,33 @@ app.post("/cleanups", protect, (req, res) => {
 
 app.delete("/cleanups/:id", protect, (req, res) => {
   const actionId = req.params.id;
-  const q = "DELETE FROM cleanups WHERE id = ? ";
 
+  const q = "SELECT * FROM cleanups WHERE id = ?";
+    
   db.query(q, [actionId], (err, data) => {
-    if (err) return res.send(err);
-    return res.json(data);
+    if (err) {
+      console.error(err);
+      return res.json(err);
+    } 
+    
+    if(data.length === 0) {
+      return res.status(404).json({ Error: "Cleanup ID not found" })
+    } 
+
+    // if(actionId !== userId) {
+    //   return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
+    // }
+
+    if(data[0].user_id !== req.user.id) {
+      return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
+    }
+
+    const delete_q = "DELETE FROM cleanups WHERE id = ? ";
+
+    db.query(delete_q, [actionId], (err, deleteData) => {
+      if (err) return res.send(err);
+      return res.json(deleteData);
+    });
   });
 });
 
