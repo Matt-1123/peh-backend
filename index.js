@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
+import { protect } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -360,7 +361,7 @@ app.get("/cleanups/:id", (req, res) => {
   });
 });
 
-app.post("/cleanups", (req, res) => {
+app.post("/cleanups", protect, (req, res) => {
   const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`) VALUES (?)";
 
   const values = [
@@ -390,7 +391,7 @@ app.post("/cleanups", (req, res) => {
   });
 });
 
-app.delete("/cleanups/:id", (req, res) => {
+app.delete("/cleanups/:id", protect, (req, res) => {
   const actionId = req.params.id;
   const q = "DELETE FROM cleanups WHERE id = ? ";
 
@@ -400,7 +401,7 @@ app.delete("/cleanups/:id", (req, res) => {
   });
 });
 
-app.put("/cleanups/:id", (req, res) => {
+app.put("/cleanups/:id", protect, (req, res) => {
   const actionId = req.params.id;
   const q = "UPDATE cleanups SET `title`= ?, `description`= ?, `date`= ?, `location`= ?, `group_size`= ?, `env_type`= ?, `total_items`= ?, `total_bags`= ? WHERE id = ?";
 
