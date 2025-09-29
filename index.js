@@ -403,14 +403,12 @@ app.delete("/cleanups/:id", protect, (req, res) => {
       return res.json(err);
     } 
     
+    // Check if cleanup exists
     if(data.length === 0) {
       return res.status(404).json({ Error: "Cleanup ID not found" })
     } 
 
-    // if(actionId !== userId) {
-    //   return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
-    // }
-
+    // Check if user owns idea
     if(data[0].user_id !== req.user.id) {
       return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
     }
@@ -426,22 +424,42 @@ app.delete("/cleanups/:id", protect, (req, res) => {
 
 app.put("/cleanups/:id", protect, (req, res) => {
   const actionId = req.params.id;
-  const q = "UPDATE cleanups SET `title`= ?, `description`= ?, `date`= ?, `location`= ?, `group_size`= ?, `env_type`= ?, `total_items`= ?, `total_bags`= ? WHERE id = ?";
 
-  const values = [
-    req.body.title,
-    req.body.description,
-    req.body.date,
-    req.body.location,
-    req.body.group_size,
-    req.body.env_type,
-    req.body.total_items,
-    req.body.total_bags
-  ];
+  const q = "SELECT * FROM cleanups WHERE id = ?";
+    
+  db.query(q, [actionId], (err, data) => {
+    if (err) {
+      console.error(err);
+      return res.json(err);
+    } 
+    
+    // Check if cleanup exists
+    if(data.length === 0) {
+      return res.status(404).json({ Error: "Cleanup ID not found" })
+    } 
 
-  db.query(q, [...values,actionId], (err, data) => {
-    if (err) return res.send(err);
-    return res.json(data);
+    // Check if user owns idea
+    if(data[0].user_id !== req.user.id) {
+      return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
+    }
+
+    const q = "UPDATE cleanups SET `title`= ?, `description`= ?, `date`= ?, `location`= ?, `group_size`= ?, `env_type`= ?, `total_items`= ?, `total_bags`= ? WHERE id = ?";
+
+    const values = [
+      req.body.title,
+      req.body.description,
+      req.body.date,
+      req.body.location,
+      req.body.group_size,
+      req.body.env_type,
+      req.body.total_items,
+      req.body.total_bags
+    ];
+
+    db.query(q, [...values,actionId], (err, data) => {
+      if (err) return res.send(err);
+      return res.json(data);
+    });
   });
 });
 
