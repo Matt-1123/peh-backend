@@ -35,15 +35,12 @@ const doesUsernameExist = (username) => {
   return new Promise((resolve, reject) => {
     const q = 'SELECT * FROM users WHERE username = ?';
     db.query(q, [username], (err, data) => {  
-      console.log('doesUsernameExist data: ', data);
       if (err) {
         console.error('Database error in doesUserExist:', err);
         reject(err);
       } else if (data.length > 0) {
-        console.log('Does username exist? True');
         resolve(true);
       } else {
-        console.log('Does user exist? False');
         resolve(false);
       }
     });
@@ -58,10 +55,8 @@ const doesEmailExist = (email) => {
         console.error('Database error in doesEmailExist:', err);
         reject(err);
       } else if (data.length > 0) {
-        console.log('Does email exist? True');
         resolve(true);
       } else {
-        console.log('Does user exist? False');
         resolve(false);
       }
     });
@@ -70,9 +65,9 @@ const doesEmailExist = (email) => {
 
 // AUTH
 app.post("/signup", async (req, res) => {
-  try {
-    const { email, username, password } = req.body;
-    
+  const { email, username, password } = req.body;
+  
+  try {    
     // Input validation
     if (!email || !username || !password) {
       return res.status(400).json({
@@ -141,8 +136,7 @@ app.post("/signup", async (req, res) => {
       res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        // sameSite: 'strict',
-        sameSite: 'none',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
@@ -150,7 +144,11 @@ app.post("/signup", async (req, res) => {
       return res.status(201).json({
         success: true,
         message: 'User account created successfully',
-        userId,
+        user: {
+          id: userId,
+          username,
+          email
+        },
         accessToken,
         refreshToken: refreshToken.substring(0, 10) + '...' // Only send partial token for security
       });
@@ -202,9 +200,8 @@ app.post("/login", (req, res) => {
           
           res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
-            // secure: process.env.NODE_ENV === 'production',
-            secure: true, // TODO: change to the above line
-            sameSite: 'none',
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
 
@@ -235,7 +232,7 @@ app.post('/logout', (req, res) => {
   res.clearCookie('refreshToken', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'none'
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
   })
 
   res.status(200).json({ message: 'Logged out successfully' })
