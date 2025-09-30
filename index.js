@@ -123,7 +123,7 @@ app.post("/signup", async (req, res) => {
       const accessToken = jwt.sign(
         { id: userId, type: 'access' }, 
         process.env.JWT_SECRET, 
-        { expiresIn: '15m' }
+        { expiresIn: '1m' }
       );
       
       // Create refresh token (long-lived)
@@ -188,7 +188,7 @@ app.post("/login", (req, res) => {
           const accessToken = jwt.sign(
             { id, type: 'access' }, 
             process.env.JWT_SECRET, 
-            { expiresIn: '15m' }
+            { expiresIn: '1m' }
           );
           
           // Create refresh token (long-lived)
@@ -293,7 +293,7 @@ app.post("/refresh", (req, res) => {
       const newAccessToken = jwt.sign(
         { id, type: 'access' },
         process.env.JWT_SECRET,
-        { expiresIn: '15m' }
+        { expiresIn: '1m' }
       );
       
       // Optionally create new refresh token (token rotation for better security)
@@ -385,7 +385,7 @@ app.post("/cleanups", protect, (req, res) => {
     //   return res.json(data);
     // }
     console.log('POST /cleanups')
-    return res.json(data);
+    res.json(data);
   });
 });
 
@@ -414,7 +414,7 @@ app.delete("/cleanups/:id", protect, (req, res) => {
 
     db.query(delete_q, [actionId], (err, deleteData) => {
       if (err) return res.send(err);
-      return res.json(deleteData);
+      res.json(deleteData);
     });
   });
 });
@@ -455,7 +455,7 @@ app.put("/cleanups/:id", protect, (req, res) => {
 
     db.query(q, [...values,actionId], (err, data) => {
       if (err) return res.send(err);
-      return res.json(data);
+      res.json(data);
     });
   });
 });
