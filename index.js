@@ -26,7 +26,8 @@ const PORT = process.env.PORT || 8000;
 
 // Connects to the tables 'cleanups' and 'users'
 const db = mysql.createConnection({
-  host: "localhost",
+  // host: "localhost",
+  host: "127.0.0.1",
   user: "matt",
   password: process.env.MYSQL_PW,
   database: "peh_actions",
