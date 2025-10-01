@@ -9,9 +9,14 @@ import { protect } from "./middleware/authMiddleware.js";
 
 dotenv.config();
 const app = express();
+
+// CORS Config
+const allowedOrigins = [
+  'http://localhost:3000'
+]
+
 app.use(cors({
-  origin: ["http://localhost:3000/login"],
-  methods: ["POST", "GET"],
+  origin: allowedOrigins,
   credentials: true
 })); // allows sending json files via any client (e.g. Postman)
 app.use(express.json()); // Middleware to parse JSON
