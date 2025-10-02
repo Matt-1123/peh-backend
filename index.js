@@ -6,6 +6,7 @@ import bcrypt from "bcrypt"
 import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
 import { protect } from "./middleware/authMiddleware.js";
+import connectDB from "./config/db.js";
 
 dotenv.config();
 const app = express();
@@ -24,14 +25,7 @@ app.use(cookieParser())
 
 const PORT = process.env.PORT || 8000;
 
-// Connects to the tables 'cleanups' and 'users'
-const db = mysql.createConnection({
-  // host: "localhost",
-  host: "127.0.0.1",
-  user: "matt",
-  password: process.env.MYSQL_PW,
-  database: "peh_actions",
-});
+connectDB();
 
 app.get("/", (req, res) => {
   res.json("Welcome to the Project Earth Health API");
