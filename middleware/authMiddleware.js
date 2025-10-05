@@ -1,15 +1,11 @@
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import mysql from "mysql2";
+import { connectDB } from '../config/db.js';
+
+const db = await connectDB();
 
 dotenv.config();
-
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "matt",
-  password: process.env.MYSQL_PW,
-  database: "peh_actions",
-});
 
 export const protect = (req, res, next) => {
     try {

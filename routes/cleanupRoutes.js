@@ -1,12 +1,15 @@
 import express from 'express';
 const router = express.Router();
 import { protect } from '../middleware/authMiddleware.js';
+import { connectDB } from '../config/db.js';
+
+const db = await connectDB();
 
 // @route           GET /api/cleanups
 // @description     Get all cleanups
 // @access          Public
 // @query           _limit (optional limit for # of cleanups returned)
-router.get("/cleanups", (req, res) => {
+router.get("/", (req, res) => {
   const limit = parseInt(req.query._limit);
   
   const q = limit ? `SELECT * FROM cleanups ORDER BY createdAt DESC LIMIT ?;` : "SELECT * FROM cleanups ORDER BY createdAt DESC;";
@@ -23,7 +26,7 @@ router.get("/cleanups", (req, res) => {
 // @route           GET /api/cleanups/:id
 // @description     Get single cleanup action
 // @access          Public
-router.get("/cleanups/:id", (req, res) => {
+router.get("/:id", (req, res) => {
   const actionId = req.params.id;
   const q = "SELECT * FROM cleanups WHERE id = ?";
     
@@ -42,7 +45,7 @@ router.get("/cleanups/:id", (req, res) => {
 // @route           POST /api/cleanups
 // @description     Create a new cleanup action
 // @access          Private
-router.post("/cleanups", protect, (req, res) => {
+router.post("/", protect, (req, res) => {
   const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`, `user_id`) VALUES (?)";
 
   const values = [
@@ -76,7 +79,7 @@ router.post("/cleanups", protect, (req, res) => {
 // @route           DELETE /api/cleanups/:id
 // @description     Delete cleanup action
 // @access          Private
-router.delete("/cleanups/:id", protect, (req, res) => {
+router.delete("/:id", protect, (req, res) => {
   const actionId = req.params.id;
 
   const q = "SELECT * FROM cleanups WHERE id = ?";
@@ -109,7 +112,7 @@ router.delete("/cleanups/:id", protect, (req, res) => {
 // @route           PUT /api/cleanups/:id
 // @description     Update cleanup action
 // @access          Private
-router.put("/cleanups/:id", protect, (req, res) => {
+router.put("/:id", protect, (req, res) => {
   const actionId = req.params.id;
 
   const q = "SELECT * FROM cleanups WHERE id = ?";

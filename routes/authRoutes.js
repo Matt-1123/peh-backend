@@ -1,6 +1,9 @@
 import express from "express";
 import jwt from "jsonwebtoken"
 import bcrypt from "bcrypt"
+import { connectDB } from '../config/db.js';
+
+const db = await connectDB();
 
 const router = express.Router();
 
