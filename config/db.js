@@ -8,10 +8,14 @@ export const connectDB = async () => {
     try {
         const connection = await mysql.createConnection({
             // host: "localhost",
-            host: "127.0.0.1",
-            user: "matt",
-            password: process.env.MYSQL_PW,
-            database: "peh_actions"
+            // host: "127.0.0.1",
+            // user: "matt",
+            // password: process.env.MYSQL_PW,
+            host: process.env.RDS_HOSTNAME, 
+            user: process.env.RDS_USERNAME, 
+            password: process.env.RDS_PASSWORD, 
+            database: process.env.RDS_DATABASE_NAME, 
+            port: process.env.RDS_PORT || 3306
         })
         return connection;
     } catch (error) {
