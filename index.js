@@ -13,7 +13,9 @@ const app = express();
 // CORS Config
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://peh-ui.vercel.app'
+  'https://peh-ui.vercel.app',
+  'https://peh-backend-goo1.onrender.com'
+
 ]
 
 app.use(cors({
