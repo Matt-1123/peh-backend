@@ -20,7 +20,14 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: allowedOrigins,
-  credentials: true
+  credentials: true,
+  allowedHeaders: [
+    "Origin",
+    "Content-Type",
+    "Accept",
+    "Authorization",
+    "X-Request-With"
+  ] 
 })); // allows sending json files via any client (e.g. Postman)
 app.use(express.json()); // Middleware to parse JSON
 app.use(cookieParser())
