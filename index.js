@@ -45,6 +45,7 @@ app.use((req, res, next) => {
   next(error);
 });
 
-app.listen(PORT, () => {
-  console.log("Connected to backend.");
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${port} on host 0.0.0.0`);
 });
+// Binding to 0.0.0.0 means the application listens for connections on all available network interfaces of the host (Render) machine
