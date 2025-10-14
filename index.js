@@ -26,6 +26,7 @@ app.use(express.json()); // Middleware to parse JSON
 app.use(cookieParser())
 
 const PORT = process.env.PORT || 8000;
+const hostname = '0.0.0.0'; // listen on every available network interface
 
 connectDB();
 
@@ -45,7 +46,6 @@ app.use((req, res, next) => {
   next(error);
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server listening on port ${port} on host 0.0.0.0`);
+app.listen(PORT, hostname, () => {
+  console.log(`Server listening on port ${PORT} on host ${hostname}`);
 });
-// Binding to 0.0.0.0 means the application listens for connections on all available network interfaces of the host (Render) machine
