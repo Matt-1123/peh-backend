@@ -26,7 +26,8 @@ app.use(cors({
     "Content-Type",
     "Accept",
     "Authorization",
-    "X-Request-With"
+    "X-Requested-With",
+    "Access-Control-Allow-Origin"
   ] 
 })); // allows sending json files via any client (e.g. Postman)
 app.use(express.json()); // Middleware to parse JSON
