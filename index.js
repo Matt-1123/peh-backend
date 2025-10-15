@@ -14,6 +14,7 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'https://peh-ui.vercel.app',
+  'https://projectearthhealth.com',
   'https://peh-backend-goo1.onrender.com'
 
 ]
