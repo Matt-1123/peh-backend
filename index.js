@@ -15,6 +15,7 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://peh-ui.vercel.app',
   'https://projectearthhealth.com',
+  'www.projectearthhealth.com',
   'https://peh-backend-goo1.onrender.com'
 
 ]
