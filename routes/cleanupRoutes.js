@@ -12,7 +12,7 @@ const db = await connectDB();
 router.get("/", (req, res) => {
   const limit = parseInt(req.query._limit);
   
-  const q = limit ? `SELECT * FROM cleanups ORDER BY createdAt DESC LIMIT ?;` : "SELECT * FROM cleanups ORDER BY createdAt DESC;";
+  const q = limit ? `SELECT * FROM cleanups ORDER BY date DESC LIMIT ?;` : "SELECT * FROM cleanups ORDER BY date DESC;";
     
   db.query(q, limit, (err, data) => {
     if (err) {
