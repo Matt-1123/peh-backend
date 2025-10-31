@@ -6,12 +6,12 @@ import { connectDB } from '../config/db.js';
 const db = await connectDB();
 
 // @route         GET /user/:id
-// @description   Get a user's information
-// @access        Private
-router.get('/:id', protect, (req, res) => {
+// @description   Get a user's username
+// @access        Public
+router.get('/:id', (req, res) => {
   const userId = req.params.id;
 
-  const q = "SELECT * FROM users WHERE id = ?";
+  const q = "SELECT username FROM users WHERE id = ?";
 
   db.query(q, [userId], (err, data) => {
     if (err) {
