@@ -42,6 +42,23 @@ router.get("/:id", (req, res) => {
   });
 });
 
+// @route           GET /api/cleanups/user/:id
+// @description     Get all cleanup actions for a user
+// @access          Public
+router.get("/user/:id", (req, res) => {
+  const actionId = req.params.id;
+  const q = "SELECT * FROM cleanups WHERE user_id = ?";
+    
+  db.query(q, [actionId], (err, data) => {
+    if (err) {
+      console.log(err);
+      return res.json(err);
+    } else {
+      res.status(200).json(data);
+    }
+  });
+});
+
 // @route           POST /api/cleanups
 // @description     Create a new cleanup action
 // @access          Private
