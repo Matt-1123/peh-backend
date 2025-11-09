@@ -78,8 +78,6 @@ router.post("/", protect, (req, res) => {
     req.user.id
   ];
 
-  console.log('db query values: ', values)
-
   db.query(q, [values], (err, data) => {
     // if (err) {
     //   console.log(`POST /cleanups error: ${err.message}`)
@@ -88,7 +86,6 @@ router.post("/", protect, (req, res) => {
     //   console.log(`POST /cleanups: ${res.json(data)}`)
     //   return res.json(data);
     // }
-    console.log('POST /cleanups')
     res.json(data);
   });
 });
@@ -112,7 +109,7 @@ router.delete("/:id", protect, (req, res) => {
       return res.status(404).json({ Error: "Cleanup ID not found" })
     } 
 
-    // Check if user owns idea
+    // Check if user owns cleanup
     if(data[0].user_id !== req.user.id) {
       return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
     }
@@ -145,7 +142,7 @@ router.put("/:id", protect, (req, res) => {
       return res.status(404).json({ Error: "Cleanup ID not found" })
     } 
 
-    // Check if user owns idea
+    // Check if user owns cleanup
     if(data[0].user_id !== req.user.id) {
       return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
     }
