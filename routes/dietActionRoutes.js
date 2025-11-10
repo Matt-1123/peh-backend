@@ -59,18 +59,15 @@ router.get("/user/:id", (req, res) => {
 // @route           POST /api/diet/meals
 // @description     Create a new diet action meal
 // @access          Private
-router.post("/", protect, (req, res) => {
-  const q = "INSERT INTO diet_meals(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`, `user_id`) VALUES (?)";
+router.post("/meals", protect, (req, res) => {
+  const q = "INSERT INTO diet_meals(`mealName`, `description`, `date`, `foodsAvoided`, `totalCO2Avoided`, `createdAt`, `user_id`) VALUES (?)";
 
   const values = [
-    req.body.title,
+    req.body.mealName,
     req.body.description,
     req.body.date,
-    req.body.location,
-    req.body.group_size,
-    req.body.env_type,
-    req.body.total_items,
-    req.body.total_bags,
+    req.body.foodsAvoided,
+    req.body.totalCO2Avoided,
     req.body.createdAt,
     req.user.id
   ];
@@ -85,7 +82,6 @@ router.post("/", protect, (req, res) => {
     //   console.log(`POST /diet_meals: ${res.json(data)}`)
     //   return res.json(data);
     // }
-    console.log('POST /diet_meals')
     res.json(data);
   });
 });
@@ -93,7 +89,7 @@ router.post("/", protect, (req, res) => {
 // @route           DELETE /api/diet/meals/:id
 // @description     Delete diet action meal
 // @access          Private
-router.delete("/:id", protect, (req, res) => {
+router.delete("/meals/:id", protect, (req, res) => {
   const actionId = req.params.id;
 
   const q = "SELECT * FROM diet_meals WHERE id = ?";
@@ -126,7 +122,7 @@ router.delete("/:id", protect, (req, res) => {
 // @route           PUT /api/diet/meals/:id
 // @description     Update diet action meal
 // @access          Private
-router.put("/:id", protect, (req, res) => {
+router.put("/meals/:id", protect, (req, res) => {
   const actionId = req.params.id;
 
   const q = "SELECT * FROM diet_meals WHERE id = ?";
@@ -137,7 +133,7 @@ router.put("/:id", protect, (req, res) => {
       return res.json(err);
     } 
     
-    // Check if cleanup exists
+    // Check if action exists
     if(data.length === 0) {
       return res.status(404).json({ Error: "Diet action meal ID not found" })
     } 
