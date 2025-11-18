@@ -63,7 +63,7 @@ router.get("/user/:id", (req, res) => {
 // @description     Create a new cleanup action
 // @access          Private
 router.post("/", protect, (req, res) => {
-  const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `env_type`, `total_items`, `total_bags`, `createdAt`, `user_id`) VALUES (?)";
+  const q = "INSERT INTO cleanups(`title`, `description`, `date`, `location`, `group_size`, `duration`, `env_type`, `total_items`, `total_bags`, `createdAt`, `user_id`) VALUES (?)";
 
   const values = [
     req.body.title,
@@ -71,6 +71,7 @@ router.post("/", protect, (req, res) => {
     req.body.date,
     req.body.location,
     req.body.group_size,
+    req.body.duration,
     req.body.env_type,
     req.body.total_items,
     req.body.total_bags,
