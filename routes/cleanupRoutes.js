@@ -148,7 +148,7 @@ router.put("/:id", protect, (req, res) => {
       return res.status(403).json({ Error: 'Not authorized to delete this cleanup.' })
     }
 
-    const q = "UPDATE cleanups SET `title`= ?, `description`= ?, `date`= ?, `location`= ?, `group_size`= ?, `env_type`= ?, `total_items`= ?, `total_bags`= ? WHERE id = ?";
+    const q = "UPDATE cleanups SET `title`= ?, `description`= ?, `date`= ?, `location`= ?, `group_size`= ?, `duration` = ?, `env_type`= ?, `total_items`= ?, `total_bags`= ? WHERE id = ?";
 
     const values = [
       req.body.title,
@@ -156,6 +156,7 @@ router.put("/:id", protect, (req, res) => {
       req.body.date,
       req.body.location,
       req.body.group_size,
+      req.body.duration,
       req.body.env_type,
       req.body.total_items,
       req.body.total_bags
