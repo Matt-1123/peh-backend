@@ -4,6 +4,7 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
 import { connectDB } from "./config/db.js";
 import cleanupsRouter from "./routes/cleanupRoutes.js";
+import dietActionsRouter from "./routes/dietActionRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js"
 
@@ -46,6 +47,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use('/api/cleanups', cleanupsRouter);
+app.use('/api/diet', dietActionsRouter)
 app.use('/api/auth', authRouter);
 app.use('/api/user/', userRouter);
 
