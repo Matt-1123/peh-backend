@@ -66,7 +66,7 @@ router.post("/meals", protect, (req, res) => {
     req.body.mealName,
     req.body.description,
     req.body.date,
-    req.body.foodsAvoided,
+    JSON.stringify(req.body.foodsAvoided),
     req.body.totalCO2Avoided,
     req.body.createdAt,
     req.user.id

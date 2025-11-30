@@ -37,6 +37,7 @@ app.use(express.json()); // Middleware to parse JSON
 app.use(cookieParser())
 
 const PORT = process.env.PORT || 8000;
+// const PORT = process.env.LOCAL_PORT || 8000;
 const hostname = '0.0.0.0'; // listen on every available network interface
 
 connectDB();
