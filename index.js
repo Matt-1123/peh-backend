@@ -1,12 +1,12 @@
-import express from "express";
-import cors from "cors";
-import dotenv from "dotenv"
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import dotenv from "dotenv";
+import express from "express";
 import { connectDB } from "./config/db.js";
+import authRouter from "./routes/authRoutes.js";
 import cleanupsRouter from "./routes/cleanupRoutes.js";
 import dietActionsRouter from "./routes/dietActionRoutes.js";
-import authRouter from "./routes/authRoutes.js";
-import userRouter from "./routes/userRoutes.js"
+import userRouter from "./routes/userRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -42,7 +42,7 @@ const hostname = '0.0.0.0'; // listen on every available network interface
 
 connectDB();
 
-app.get("/", (req, res) => {
+app.get("/api", (req, res) => {
   res.json("Welcome to the Project Earth Health API");
 });
 
