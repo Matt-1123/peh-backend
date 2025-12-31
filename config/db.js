@@ -1,5 +1,5 @@
+import dotenv from "dotenv";
 import mysql from "mysql2";
-import dotenv from "dotenv"
 
 dotenv.config();
 
@@ -13,7 +13,7 @@ export const connectDB = async () => {
             database: process.env.RDS_DATABASE_NAME, 
             port: process.env.RDS_PORT || 3306
         })
-        return localConnection;
+        return connection;
 
         // const localConnection = await mysql.createConnection({
         //     host: process.env.LOCAL_PORT,
