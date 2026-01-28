@@ -1,0 +1,31 @@
+@host = https://peh-backend-goo1.onrender.com
+
+# Get all cleanup actions
+GET {{host}}/api/cleanups
+###
+# Get single cleanup action
+GET {{host}}/api/cleanups/77
+
+###
+# Get all cleanup actions for a user
+GET {{host}}/api/cleanups/user/2
+
+### 
+# Create a new cleanup action
+# Private route - requires token
+POST {{host}}/api/cleanups
+content-type: application/json
+
+{
+    "title": "Test",
+    "description": "lorem ipsum dolor",
+    "date": "2026-01-01T00:00:000Z",
+    "location": "Hackett Boulevard, Albany, New York 12208, United States",
+    "group_size": 1,
+    "duration": 60,
+    "env_type": "path",
+    "total_items": null,
+    "total_bags": "2.00",
+    "createdAt": "2026-01-01T00:00:000Z",
+    "user_id": 2
+}

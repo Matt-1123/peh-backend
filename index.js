@@ -11,6 +11,8 @@ import userRouter from "./routes/userRoutes.js";
 dotenv.config();
 const app = express();
 
+// Middleware
+
 // CORS Config
 const allowedOrigins = [
   'http://localhost:3000',
@@ -33,14 +35,32 @@ app.use(cors({
     "Access-Control-Allow-Origin"
   ] 
 })); // allows sending json files via any client (e.g. Postman)
-app.use(express.json()); // Middleware to parse JSON
+
+app.use(express.json()); // parse request JSON
 app.use(cookieParser())
+
+// request logging
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method)
+  console.log('Path:  ', request.path)
+  console.log('Body:  ', request.body)
+  console.log('---')
+  next()
+}
+app.use(requestLogger)
 
 const PORT = process.env.PORT || 8000;
 // const PORT = process.env.LOCAL_PORT || 8000;
 const hostname = '0.0.0.0'; // listen on every available network interface
 
 connectDB();
+
+console.log('test')
+
+app.use((req, res, next) => {
+  console.log('🔥 ANY REQUEST RECEIVED:', req.method, req.path);
+  next();
+});
 
 app.get("/api", (req, res) => {
   res.json("Welcome to the Project Earth Health API");
