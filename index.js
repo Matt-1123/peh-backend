@@ -55,13 +55,6 @@ const hostname = '0.0.0.0'; // listen on every available network interface
 
 connectDB();
 
-console.log('test')
-
-app.use((req, res, next) => {
-  console.log('🔥 ANY REQUEST RECEIVED:', req.method, req.path);
-  next();
-});
-
 app.get("/api", (req, res) => {
   res.json("Welcome to the Project Earth Health API");
 });
@@ -72,12 +65,15 @@ app.use('/api/diet', dietActionsRouter)
 app.use('/api/auth', authRouter);
 app.use('/api/user/', userRouter);
 
-// 404 Fallback
-app.use((req, res, next) => {
-  const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
-  next(error);
-});
+// Middleware - 404 Fallback
+const unknownEndpoint = (request, response) => {
+  response.status(404).json({
+    error: 'Unknown Endpoint',
+    message: `Cannot ${request.method} ${request.originalUrl}`
+  })
+}
+
+app.use(unknownEndpoint)
 
 app.listen(PORT, hostname, () => {
   console.log(`Server listening on port ${PORT} on host ${hostname}`);
