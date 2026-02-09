@@ -1,9 +1,16 @@
 import express from 'express';
-const router = express.Router();
-import { protect } from '../middleware/authMiddleware.js';
 import { connectDB } from '../config/db.js';
+import { protect } from '../middleware/authMiddleware.js';
+const router = express.Router();
 
 const db = await connectDB();
+
+router.get("/debug-connection", async (req, res) => {
+  db.query("SELECT DATABASE() as current_db, @@hostname as host", (err, data) => {
+    if (err) return res.json(err);
+    res.json(data);
+  });
+});
 
 // @route           GET /api/cleanups
 // @description     Get all cleanups
@@ -46,10 +53,10 @@ router.get("/:id", (req, res) => {
 // @description     Get all cleanup actions for a user
 // @access          Public
 router.get("/user/:id", (req, res) => {
-  const actionId = req.params.id;
+  const userId = req.params.id;
   const q = "SELECT * FROM cleanups WHERE user_id = ?";
     
-  db.query(q, [actionId], (err, data) => {
+  db.query(q, [userId], (err, data) => {
     if (err) {
       console.log(err);
       return res.json(err);
