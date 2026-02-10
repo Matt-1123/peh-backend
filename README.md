@@ -2,6 +2,9 @@
 
 Backend API server for [projectearthhealth.com](https://projectearthhealth.com). Built with Node.js, Express, and MySQL.
 
+## Deployment
+The backend is hosted on Render at: **https://peh-backend-goo1.onrender.com/**
+
 ## Features
 
 - RESTful API architecture
