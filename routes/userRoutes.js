@@ -18,9 +18,9 @@ router.get('/:id', (req, res) => {
       console.log(err);
       return res.json(err);
     } else if(data.length === 0) {
-      res.status(404).json({ Error: "User ID not found" })
+      return res.status(404).json({ Error: "User ID not found" })
     } else {
-      res.status(200).json(data);
+      return res.status(200).json(data);
     }
   });
 })
@@ -36,7 +36,7 @@ router.delete('/:id', protect, (req, res) => {
   db.query(q, [userId], (err, data) => {
     if (err) {
       console.error(err);
-      return res.json(err);
+      return res.status(500).json(err);
     }
     
     // Check if user exists
@@ -52,8 +52,11 @@ router.delete('/:id', protect, (req, res) => {
     const delete_q = "DELETE FROM users WHERE id = ?"
 
     db.query(delete_q, [userId], (err, deleteData) => {
-      if(err) return res.send(err);
-      res.json(deleteData)
+      if(err) {
+        return res.status(500).json(err)
+      }
+      
+      return res.status(200).json(deleteData)
     })
   })
 })
