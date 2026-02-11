@@ -1,15 +1,19 @@
+import bcrypt from "bcrypt";
 import express from "express";
-import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
+import jwt from "jsonwebtoken";
 import { connectDB } from '../config/db.js';
 
 const db = await connectDB();
 
 const router = express.Router();
 
+// ==================== //
+// ======= Util ======= //
+// ==================== //
+
 const doesUsernameExist = (username) => {
   return new Promise((resolve, reject) => {
-    const q = 'SELECT * FROM users WHERE username = ?';
+    const q = 'SELECT username FROM users WHERE username = ?';
     db.query(q, [username], (err, data) => {  
       if (err) {
         console.error('Database error in doesUserExist:', err);
@@ -25,7 +29,7 @@ const doesUsernameExist = (username) => {
 
 const doesEmailExist = (email) => {
   return new Promise((resolve, reject) => {
-    const q = 'SELECT * FROM users WHERE email = ?';
+    const q = 'SELECT email FROM users WHERE email = ?';
     db.query(q, [email], (err, data) => {  
       if (err) {
         console.error('Database error in doesEmailExist:', err);
@@ -38,6 +42,17 @@ const doesEmailExist = (email) => {
     });
   });
 };
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+};
+
+// ====================== //
+// ======= Routes ======= //
+// ====================== //
+
 
 // @route         POST api/auth/signup
 // @description   Register new user
@@ -67,10 +82,11 @@ router.post("/signup", async (req, res) => {
     // Check if email already exists
     const emailAlreadyExists = await doesEmailExist(email);
     
+    // Keep message vague to prevent user enumeration vulnerability
     if (emailAlreadyExists) {
       return res.status(409).json({
         success: false,
-        message: 'An account with this email address already exists'
+        message: 'Unable to create account. If you already have an account, please log in instead.'
       });
     }
 
@@ -112,9 +128,7 @@ router.post("/signup", async (req, res) => {
       );
       
       res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
 
@@ -127,8 +141,7 @@ router.post("/signup", async (req, res) => {
           username,
           email
         },
-        accessToken,
-        refreshToken: refreshToken.substring(0, 10) + '...' // Only send partial token for security
+        accessToken
       });
     });
     
@@ -147,7 +160,10 @@ router.post("/signup", async (req, res) => {
 router.post("/login", (req, res) => {
   const { email, password } = req.body || {};
   if(!email || !password) {
-    res.status(400).json({ Error: "Email and password are required" })
+    return res.status(400).json({ 
+      success: false,
+      message: "Email and password are required" 
+    })
   }
   
   const q = 'SELECT * from users WHERE email = ?'
@@ -155,11 +171,17 @@ router.post("/login", (req, res) => {
   db.query(q, [req.body.email], (err, data) => {   
     if(err) {
       console.error(err)
-      res.status(400).json({Error: err})
+      res.status(500).json({ 
+        success: false,
+        message: 'Internal server error'
+      })
     } else if(data.length > 0) {
       bcrypt.compare(req.body.password.toString(), data[0].password, (err, response) => {
         if(err) {
-          res.status(400).json({Error: "Login error"})
+          res.status(400).json({ 
+            success: false,
+            message: "Login error"
+          })
         } else if(response) {
           const id = data[0].id;
           const username = data[0].username;
@@ -180,28 +202,32 @@ router.post("/login", (req, res) => {
           );
           
           res.cookie('refreshToken', refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
+            ...cookieOptions,
             maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
           });
 
-          return res.status(201).json({
+          return res.status(200).json({
+            success: true,
             message: 'User logged in successfully',
             user: {
               id,
               username,
               email
             },
-            accessToken,
-            refreshToken: refreshToken.substring(0, 10) + '...' // Only send partial token for security
+            accessToken
           });
         } else {
-          res.status(401).json({ Error: "Invalid credentials" })
+          return res.status(401).json({ 
+            success: false,
+            message: "Invalid credentials" 
+          })
         }
       })
     } else {
-      res.status(401).json({ Error: "Invalid credentials" })
+      return res.status(401).json({ 
+        success: false,
+        message: "Invalid credentials" 
+      })
     }
   })
 });
@@ -210,13 +236,12 @@ router.post("/login", (req, res) => {
 // @description   Logout user and clear refresh token
 // @access        Private
 router.post('/logout', (req, res) => {
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // if secure is true, set to none
-  })
+  res.clearCookie('refreshToken', cookieOptions)
 
-  res.status(200).json({ message: 'Logged out successfully' })
+  res.status(200).json({ 
+    success: true,
+    message: 'Logged out successfully' 
+  })
 })
 
 // @route         POST /refresh
@@ -227,34 +252,49 @@ router.post("/refresh", (req, res) => {
   const refreshToken = req.cookies.refreshToken;
   
   if (!refreshToken) {
-    return res.status(401).json({ Error: "No refresh token provided" });
+    return res.status(401).json({ 
+      success: false, 
+      message: "No refresh token provided" 
+    });
   }
   
   // Verify the refresh token
-  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, decoded) => {
+  jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(403).json({ Error: "Invalid or expired refresh token" });
+      return res.status(403).json({ 
+        success: false,
+        message: "Invalid or expired refresh token" 
+      });
     }
     
-    // Check if token type is 'refresh'
+    // Ensure token type is 'refresh'
     if (decoded.type !== 'refresh') {
-      return res.status(403).json({ Error: "Invalid token type" });
+      return res.status(403).json({ 
+        success: false,
+        message: "Invalid token type" 
+      });
     }
     
     // Get user data from database to ensure user still exists
-    const q = 'SELECT * from users WHERE id = ?';
+    const q = 'SELECT id from users WHERE id = ?';
     db.query(q, [decoded.id], (err, data) => {
       if (err) {
         console.error(err);
-        return res.status(400).json({ Error: err });
+        return res.status(400).json({ 
+          success: false,
+          message: "Error getting user from database" 
+        });
       } 
       
       if (data.length === 0) {
-        return res.status(401).json({ Error: "User not found" });
+        return res.status(401).json({ 
+          success: false,
+          message: "User not found" 
+        });
       }
       
       const user = data[0];
-      const { id, username, email } = user;
+      const { id } = user;
       
       // Create new access token
       const newAccessToken = jwt.sign(
@@ -272,22 +312,14 @@ router.post("/refresh", (req, res) => {
       
       // Set new refresh token in cookie
       res.cookie('refreshToken', newRefreshToken, {
-        httpOnly: true,
-        // secure: process.env.NODE_ENV === 'production',
-        secure: true, // TODO: change to the above line
-        sameSite: 'none',
+        ...cookieOptions,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
       
       return res.status(200).json({
+        success: true,
         message: 'Token refreshed successfully',
-        user: {
-          id,
-          username,
-          email
-        },
-        accessToken: newAccessToken,
-        refreshToken: newRefreshToken.substring(0, 10) + '...' // Only send partial token for security
+        accessToken: newAccessToken
       });
     });
   });
